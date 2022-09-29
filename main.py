@@ -53,17 +53,17 @@ def select_pokemon_stats():
     return selected_stat
 
 
-def compare_pokemon_stats(players_stat, opponents_stat):
-    # decides which player's stat is higher
-    player_pokemon_higher = False
-    opponent_pokemon_higher = False
+def compare_stats_and_scores(player_number, opponent_number):
+    # decides which player's stat or score is higher
+    player_higher = False
+    opponent_higher = False
 
-    if players_stat > opponents_stat:
-        player_pokemon_higher = True
-    elif players_stat < opponents_stat:
-        opponent_pokemon_higher = True
+    if player_number > opponent_number:
+        player_higher = True
+    elif player_number < opponent_number:
+        opponent_higher = True
 
-    return player_pokemon_higher, opponent_pokemon_higher
+    return player_higher, opponent_higher
 
 
 def update_score(player_score, opponent_score, player_wins_round, opponent_wins_round):
@@ -74,19 +74,6 @@ def update_score(player_score, opponent_score, player_wins_round, opponent_wins_
         opponent_score += 1
 
     return player_score, opponent_score
-
-
-def select_overall_winner(player_final_score, opponent_final_score):
-    # compares overall scores and selects overall winner
-    player_wins_game = False
-    opponent_wins_game = False
-
-    if player_final_score > opponent_final_score:
-        player_wins_game = True
-    elif player_final_score < opponent_final_score:
-        opponent_wins_game = True
-
-    return player_wins_game, opponent_wins_game
 
 
 def run_round(player_chosen_username, opponent_given_username):
@@ -152,7 +139,7 @@ def run_game(player_chosen_username, opponent_given_username):
         rounds_played += 1
 
     # uses the select_overall_winner function by passing the final scores from all rounds
-    player_won_game, opponent_won_game = select_overall_winner(player_score, opponent_score)
+    player_won_game, opponent_won_game = compare_stats_and_scores(player_score, opponent_score)
 
     print("And the overall winner is...\n")
 
