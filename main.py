@@ -8,7 +8,7 @@ def get_random_number():
 
 
 def get_pokemon_url(pokemon_number):
-    # gets the url of a specific number Pokemon
+    # gets the url of a specific number Pokémon
     pokemon_url = f'https://pokeapi.co/api/v2/pokemon/{pokemon_number}/'
     pokemon = requests.get(pokemon_url).json()
     return pokemon
@@ -41,7 +41,7 @@ def display_pokemon_stats(pokemon_stats):
     print('__________')
 
 
-def select_pokemon_stats():
+def select_pokemon_stat():
     # allows player to choose one of the stats
     stats_options = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed']
     stat_choice = input("Select stat by bullet number (1-6):")
@@ -50,6 +50,13 @@ def select_pokemon_stats():
         stat_choice = input("Please select correctly. You must choose a number between 1 and 6:")
         stat_choice = int(stat_choice)
     selected_stat = stats_options[stat_choice - 1]
+    return selected_stat
+
+
+def get_random_pokemon_stat():
+    stats_options = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed']
+    stat_choice = random.randint(0, 5)
+    selected_stat = stats_options[stat_choice]
     return selected_stat
 
 
@@ -76,7 +83,9 @@ def update_score(player_score, opponent_score, player_wins_round, opponent_wins_
     return player_score, opponent_score
 
 
-def run_round(player_chosen_username, opponent_given_username):
+def run_round_player_turn(player_chosen_username, opponent_given_username):
+
+    print(f"{player_chosen_username}, you pick this round!")
 
     players_pokemon_number = get_random_number()
     players_pokemon = get_pokemon_url(players_pokemon_number)
@@ -88,10 +97,10 @@ def run_round(player_chosen_username, opponent_given_username):
     opponents_pokemon = get_pokemon_url(opponents_pokemon_number)
     opponents_pokemon_stats = get_pokemon_stats(opponents_pokemon)
 
-    print(f"{player_chosen_username}, your pokemon is {players_pokemon_stats['name']}")
+    print(f"{player_chosen_username}, your pokemon this round is {players_pokemon_stats['name']}")
     display_pokemon_stats(players_pokemon_stats)
 
-    selected_stat = select_pokemon_stats()
+    selected_stat = select_pokemon_stat()
     players_selected_stat = players_pokemon_stats[selected_stat]
     opponents_selected_stat = opponents_pokemon_stats[selected_stat]
 
@@ -106,8 +115,55 @@ def run_round(player_chosen_username, opponent_given_username):
     )
     print("Which means....")
     player_wins, opponent_wins = \
-        compare_pokemon_stats(int(players_selected_stat),
-                              int(opponents_selected_stat))
+        compare_stats_and_scores(int(players_selected_stat),
+                                 int(opponents_selected_stat))
+    if player_wins:
+        print(f"{player_chosen_username}, you won this round!")
+    elif opponent_wins:
+        print(f"{opponent_given_username} won this round!")
+    else:
+        print("This round was a draw")
+    print(f"\n")
+
+    return player_wins, opponent_wins
+
+
+def run_round_opponent_turn(player_chosen_username, opponent_given_username):
+
+    print(f"Your opponent,{opponent_given_username}, picks this round!")
+
+    players_pokemon_number = get_random_number()
+    players_pokemon = get_pokemon_url(players_pokemon_number)
+    players_pokemon_stats = get_pokemon_stats(players_pokemon)
+
+    opponents_pokemon_number = get_random_number()
+    while opponents_pokemon_number == players_pokemon_number:
+        opponents_pokemon_number = get_random_number()
+    opponents_pokemon = get_pokemon_url(opponents_pokemon_number)
+    opponents_pokemon_stats = get_pokemon_stats(opponents_pokemon)
+
+    print(f"{player_chosen_username}, your pokemon is {players_pokemon_stats['name']}")
+    display_pokemon_stats(players_pokemon_stats)
+
+    random_stat = get_random_pokemon_stat()
+    players_selected_stat = players_pokemon_stats[random_stat]
+    opponents_selected_stat = opponents_pokemon_stats[random_stat]
+
+    print(f"{opponent_given_username} has chosen {random_stat}")
+
+    print(f"\n{opponent_given_username} had {opponents_pokemon_stats['name']}")
+    display_pokemon_stats(opponents_pokemon_stats)
+
+    print(
+        f"{player_chosen_username}, your {players_pokemon_stats['name']}'s "
+        f"{random_stat} was {players_selected_stat} "
+        f"and {opponent_given_username}'s {opponents_pokemon_stats['name']}'s "
+        f"{random_stat} was {opponents_selected_stat}"
+    )
+    print("Which means....")
+    player_wins, opponent_wins = \
+        compare_stats_and_scores(int(players_selected_stat),
+                                 int(opponents_selected_stat))
     if player_wins:
         print(f"{player_chosen_username}, you won this round!")
     elif opponent_wins:
@@ -129,14 +185,31 @@ def run_game(player_chosen_username, opponent_given_username):
 
     while rounds_played < number_of_rounds:
         print(f"\nThis is round {rounds_played + 1}\n")
-        player_won, opponent_won = run_round(player_chosen_username, opponent_given_username)
 
+
+        player_won, opponent_won = run_round_player_turn(player_chosen_username, opponent_given_username)
         player_score, opponent_score = update_score(player_score, opponent_score, player_won, opponent_won)
         print("Current Score:")
         print(f"{player_chosen_username}: {player_score}")
         print(f"{opponent_given_username}: {opponent_score}")
         print(f"\n")
+
         rounds_played += 1
+
+        if rounds_played == number_of_rounds:
+            pass
+
+        else:
+            print(f"\nThis is round {rounds_played + 1}\n")
+
+            player_won, opponent_won = run_round_opponent_turn(player_chosen_username, opponent_given_username)
+            player_score, opponent_score = update_score(player_score, opponent_score, player_won, opponent_won)
+            print("Current Score:")
+            print(f"{player_chosen_username}: {player_score}")
+            print(f"{opponent_given_username}: {opponent_score}")
+            print(f"\n")
+
+            rounds_played += 1
 
     # uses the select_overall_winner function by passing the final scores from all rounds
     player_won_game, opponent_won_game = compare_stats_and_scores(player_score, opponent_score)
@@ -151,7 +224,7 @@ def run_game(player_chosen_username, opponent_given_username):
         print("No one! It was a draw. Why don't you play another round to find a winner?")
         play_another_round = input("Would you like to play another round? Print 'y' for yes or 'n' for no.")
         if play_another_round == "y":
-            run_round(player_chosen_username, opponent_given_username)
+            run_round_player_turn(player_chosen_username, opponent_given_username)
         elif play_another_round == "n":
             print("Good idea, let's keep this one as a draw.")
             exit()
@@ -177,4 +250,5 @@ player_username = input("What is your name?")
 opponent_username = input("And what would you like your opponent to be called?")
 
 run_game(player_username, opponent_username)
+
 
