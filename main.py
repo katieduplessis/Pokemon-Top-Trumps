@@ -106,8 +106,7 @@ def run_round(player_chosen_username, opponent_given_username):
     )
     print("Which means....")
     player_wins, opponent_wins = \
-        compare_pokemon_stats(int(players_selected_stat),
-                              int(opponents_selected_stat))
+        compare_stats_and_scores(int(players_selected_stat), int(opponents_selected_stat))
     if player_wins:
         print(f"{player_chosen_username}, you won this round!")
     elif opponent_wins:
